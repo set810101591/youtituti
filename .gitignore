@@ -1,52 +1,307 @@
-# Prerequisites
-*.d
+#include <stdio.h>
+#include <stdlib.h>
+#include<string.h>
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+// // class post
+struct post
+{
+    char *content;
+    int likes;
+    char *author;
+    int post_id;
 
-# Linker output
-*.ilk
-*.map
-*.exp
+    // methods
+    // void (*like)(struct post *self);
 
-# Precompiled Headers
-*.gch
-*.pch
+    // void (*print)(struct post *self);
+};
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+// class post methods
+// void like(struct post *self)
+// {
+//     // self->likes++;
+// }
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+// void print(struct post *self)
+// {
+//     printf("\nuser: %s \npost_id: %d\nLikes: %d\npost: %s", self->author, self->post_id, self->likes, self->content);
+// }
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+// class post constructor
+  
+struct post *new_post(char *content, char *author, int post_id)
+{
+    struct post *self = malloc(sizeof(struct post));
+    self->content = content;
+    self->likes = 0;
+    self->author = author;
+    self->post_id = post_id;
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+    // methods
+    // self->like = like;
+    // self->print = print;
+free(self);
+    return self;
+} 
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+
+
+// // class user
+
+struct user
+{
+    char *username;
+    char *password;
+    int post_count;
+    struct post posts[100];
+};
+
+// signup get a list and username and password and add new user to list
+void signup(struct user *users, char *username, char *password)
+{
+    users->username = username;
+    users->password = password;
+    users->post_count = 0;
+}
+
+// create a post and add it to user posts
+struct post makePost(char *author, char *content, int id)
+{
+    struct post newPost = *new_post(content, author, id);
+    // print post
+    // newPost.print(&newPost);
+
+    return newPost;
+}
+
+// delete a post from user posts
+void delete_post(struct user *self, int post_id)
+{
+
+    // self->posts[post_id] = self->posts[self->post_count - 1];
+    self->posts[post_id] = *new_post(NULL, NULL, 0);
+}
+
+// main function
+int main()
+{
+    // create a list of users
+    struct user logineduser;
+    struct user users[100];
+    int numberOfUsers = 0;
+    int i = 0;
+    while (i < 100)
+    {
+        char *line = malloc(sizeof(char) * 100);
+        char *content = malloc(sizeof(char) * 100);
+        fgets(line, 100, stdin);
+        // copy line to content
+        strcpy(content, line);
+        char **result = malloc(sizeof(char *) * 100);
+        int j = 0;
+        char *token = strtok(line, " ");
+        while (token != NULL)
+        {
+            result[j] = token;
+            token = strtok(NULL, " ");
+            j++;
+        }
+        // save first index of result
+        char *first = result[0];
+        // check if first index is equal to "signup" or "login" or "logout" or "post" or "like"  or "delete" or "info"  and chaneg c to number
+        int c;
+
+        if (strcmp(first, "signup") == 0)
+        {
+            char *username = result[1];
+            // printf("%s", username);
+            char *password = result[2];
+            // printf("%s", password);
+            signup(&users[numberOfUsers], username, password);
+            numberOfUsers++;
+            // save user in txt file
+        }
+        else if (strcmp(first, "login") == 0)
+        {
+            char *username = result[1];
+            char *password = result[2];
+
+            for (int i = 0; i < numberOfUsers; i++)
+            {
+
+                if (strcmp(users[i].username, username) == 0 && strcmp(users[i].password, password) == 0)
+                {
+                    printf("\nlogin successful\n");
+                    logineduser = users[i];
+                    // print i
+                    break;
+                }
+            }
+        }
+        else if (strcmp(first, "info\n") == 0)
+        {
+            // print info of user
+            printf("************************\n");
+            char *username = logineduser.username;
+            char *password = logineduser.password;
+            int post_count = logineduser.post_count;
+            // print username password and post cont
+            printf("\nusername: %s\npassword: %s\n", username, password);
+
+            for (int i = 0; i < post_count; i++)
+            {
+
+                // logineduser.posts[i].print(&logineduser.posts[i]);
+                printf("user: %s\n", logineduser.posts[i].author);
+                printf("post_id: %d\n", logineduser.posts[i].post_id);
+                printf("post: %s\n", logineduser.posts[i].content);
+                printf("Likes: %d\n", logineduser.posts[i].likes);
+
+                printf("************************\n");
+            }
+        }
+
+        else if (strcmp(first, "post") == 0)
+        {
+
+            // memmove(content, content + 5, strlen(content));
+            
+            // struct post newPost = makePost(logineduser.username, content, logineduser.post_count);
+            // logineduser.posts[logineduser.post_count] = newPost;
+            logineduser.posts[logineduser.post_count].author = logineduser.username;
+            logineduser.posts[logineduser.post_count].content = content+5;
+            logineduser.posts[logineduser.post_count].post_id = logineduser.post_count;
+            logineduser.posts[logineduser.post_count].likes = 0;
+            // logineduser.posts[logineduser.post_count].print = print;
+            //print post 
+            // logineduser.posts[logineduser.post_count].print(&logineduser.posts[logineduser.post_count]);
+            logineduser.post_count++;
+        }
+        else if (strcmp(first, "like") == 0)
+        {
+            char *username = result[1];
+            int postid = atoi(result[2]);
+            // printf("%d\n", postid);
+            // printf("%s\n", username);
+
+            for (int i = 0; i < numberOfUsers; i++)
+            {
+                // if (strcmp(users[i].username, username) == 0)
+                // {
+                //     users[i].posts[postid].like(&users[i].posts[postid]);
+                //     break;
+                // }
+                if (strcmp(users[i].username, username) == 0)
+                {
+                    // users[i].posts[postid].like(&users[i].posts[postid]);
+
+                    int likke = users[i].posts[postid].likes += 1;
+                    users[i].posts[postid].likes = likke;
+
+                    // users[i].posts->likes +=1;
+                    // users[i].posts[postid].print(&users[i].posts[postid]);
+
+                    break;
+                }
+            }
+        }
+
+        else if (strcmp(first, "delete") == 0)
+        {
+            int postid = atoi(result[1]);
+            delete_post(&logineduser, postid);
+        }
+
+        else if (strcmp(first, "logout\n") == 0)
+        {
+            for (int i = 0; i < numberOfUsers; i++)
+            {
+
+                if (strcmp(users[i].username, logineduser.username) == 0 && strcmp(users[i].password, logineduser.password) == 0)
+                {
+                    printf("\nlogout successful\n");
+                    users[i] = logineduser;
+                    // print i
+                    break;
+                }
+            }
+            struct user logineduser;
+            // printf("logout successful\n");
+        }
+        else if (strcmp(first, "find_user") == 0)
+        {
+            int found = 0;
+            char *username = result[1];
+            int size1 = strlen(username);
+            // remove last char of username
+            username[strlen(username) - 1] = '\0';
+            int size3 = strlen(username);
+
+            int size2 = strlen(users[0].username);
+            // printf("size1: %d size2: %d size3 : %d", size1, size2,size3);
+            for (int i = 0; i < numberOfUsers; i++)
+            {
+                // printf("user: %s%s%d", users[i].username, username, strcmp(users[i].username, username));
+                if (strcmp(users[i].username, username) == 0)
+                {
+                    // printf("find_user");
+                    found = 1;
+                    printf("************************\n");
+                    // print user post count
+                    printf("post count: %d\n", users[i].post_count);
+                    for (int i = 0; i < users[i].post_count; i++)
+                    {
+                        printf("username: %s\n", username);
+                        // logineduser.posts[i].print(&logineduser.posts[i]);
+                        // print post
+                        printf("post id: %d\n", users[i].posts[i].post_id);
+                        printf("content: %s\n", users[i].posts[i].content);
+                        printf("likes: %d\n", users[i].posts[i].likes);
+
+                        printf("************************\n");
+                    }
+                }
+            }
+        }
+        else if (strcmp(first, "save_users\n")==0)
+        {
+            
+            // save users in txt file
+            FILE *fptr;
+            fptr = fopen("users.txt", "w");
+            for (int i = 0; i < numberOfUsers; i++)
+            {
+                users[i].password[strlen(users[i].password)-1] = '\0';
+                fprintf(fptr, "%s %s %d\n", users[i].username, users[i].password, users[i].post_count);
+            }
+            fclose(fptr);
+            // PRINT ALL SAVED
+            printf("saved users\n");
+        }
+        else if (strcmp(first, "save_posts\n")==0)
+        {
+            // save posts in txt file
+            FILE *fptr;
+            fptr = fopen("posts.txt", "a");
+            for (int i = 0; i < numberOfUsers; i++)
+            {
+                for (int j = 0; j < users[i].post_count; j++)
+
+                {
+                    users[i].posts[j].content[strlen(users[i].posts[j].content)-1] = '\0';
+                    fprintf(fptr, "%s %s %d\n", users[i].posts[j].content, users[i].posts[j].author, users[i].posts[j].likes);
+                }
+            }
+            fclose(fptr);
+            // PRINT ALL SAVED
+            printf("saved posts\n");
+            
+        }
+        
+        else
+        {
+            printf("invalid command\n");
+        }
+        // printf("%d \n", c);
+    }
+}
